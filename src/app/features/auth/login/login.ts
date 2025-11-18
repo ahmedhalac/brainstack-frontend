@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-login',
-  imports: [],
+  imports: [MatSlideToggleModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
-
-}
+export class Login {}
