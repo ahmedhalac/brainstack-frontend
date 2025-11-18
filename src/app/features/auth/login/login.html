@@ -1,1 +1,14 @@
-<mat-slide-toggle>Toggle me!</mat-slide-toggle>
+<form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <h1>Login</h1>
+  <mat-form-field class="example-full-width">
+    <mat-label>Email</mat-label>
+    <input matInput type="text" placeholder="Email" formControlName="email" />
+  </mat-form-field>
+  <mat-form-field class="example-full-width">
+    <mat-label>Password</mat-label>
+    <input matInput type="password" placeholder="Password" formControlName="password" />
+  </mat-form-field>
+  <div class="example-button-row">
+    <button type="submit" matButton="filled">Login</button>
+  </div>
+</form>
