@@ -3,12 +3,17 @@
   <mat-form-field class="example-full-width">
     <mat-label>Email</mat-label>
     <input matInput type="text" placeholder="Email" formControlName="email" />
+    @if (loginForm.get('email')?.errors?.['required']) {
+    <mat-error>Email is <strong>required</strong></mat-error>
+    } @if (loginForm.get('email')?.errors?.['email']) {
+    <mat-error>Please enter a valid email address</mat-error>
+    }
   </mat-form-field>
   <mat-form-field class="example-full-width">
     <mat-label>Password</mat-label>
     <input matInput type="password" placeholder="Password" formControlName="password" />
   </mat-form-field>
   <div class="example-button-row">
-    <button type="submit" matButton="filled">Login</button>
+    <button type="submit" matButton="filled" [disabled]="!loginForm.valid">Submit</button>
   </div>
 </form>
