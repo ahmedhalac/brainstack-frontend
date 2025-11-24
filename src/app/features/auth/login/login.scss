@@ -5,4 +5,11 @@
   margin: 0 auto;
   width: 20%;
   padding-top: 20%;
+
+  .button-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
