@@ -8,6 +8,7 @@ import { RouterLinkWithHref } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { EMPTY, Subject, catchError, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 @Component({
   selector: 'app-login',
@@ -18,6 +19,7 @@ import { ToastrService } from 'ngx-toastr';
     MatInputModule,
     MatButtonModule,
     RouterLinkWithHref,
+    NgxSpinnerModule,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -26,6 +28,7 @@ export class Login implements OnInit, OnDestroy {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private toastr = inject(ToastrService);
+  private spinner = inject(NgxSpinnerService);
 
   private destroy$ = new Subject<void>();
   loginForm = this.initializeForm();
@@ -40,11 +43,13 @@ export class Login implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    this.spinner.show();
     this.authService
       .login(this.loginForm.value)
       .pipe(
         takeUntil(this.destroy$),
         catchError((err) => {
+          this.spinner.hide();
           console.error(err);
           this.toastr.error(err);
           return EMPTY;
@@ -52,6 +57,7 @@ export class Login implements OnInit, OnDestroy {
       )
       .subscribe((res) => {
         console.log(res);
+        this.spinner.hide();
       });
   }
 
