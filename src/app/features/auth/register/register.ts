@@ -1,10 +1,15 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import { RouterLinkWithHref } from "@angular/router";
+import { RouterLinkWithHref } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { AuthService } from '../../../core/services/auth.service';
+import { EMPTY, Subject, catchError, takeUntil } from 'rxjs';
+import { RegisterRequest } from '../../../models/auth/register.model';
 
 @Component({
   selector: 'app-register',
@@ -14,13 +19,18 @@ import { RouterLinkWithHref } from "@angular/router";
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    RouterLinkWithHref
-],
+    RouterLinkWithHref,
+  ],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
-export class Register {
+export class Register implements OnDestroy {
   private formBuilder = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private toastr = inject(ToastrService);
+  private spinner = inject(NgxSpinnerService);
+
+  private destroy$ = new Subject<void>();
   registerForm = this.initializeForm();
 
   initializeForm(): FormGroup {
@@ -32,6 +42,30 @@ export class Register {
   }
 
   onSubmit(): void {
-    console.log(this.registerForm.value);
+    this.registerUser(this.registerForm.value);
+  }
+
+  registerUser(formValue: RegisterRequest): void {
+    this.spinner.show();
+    this.authService
+      .register(formValue)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((err) => {
+          this.spinner.hide();
+          console.error(err);
+          this.toastr.error(err);
+          return EMPTY;
+        })
+      )
+      .subscribe((res) => {
+        console.log(res);
+        this.spinner.hide();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

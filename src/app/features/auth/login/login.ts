@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatInputModule } from '@angular/material/input';
@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { EMPTY, Subject, catchError, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { LoginRequest } from '../../../models/auth/login.model';
 
 @Component({
   selector: 'app-login',
@@ -24,7 +25,7 @@ import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login implements OnInit, OnDestroy {
+export class Login implements OnDestroy {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private toastr = inject(ToastrService);
@@ -32,8 +33,6 @@ export class Login implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   loginForm = this.initializeForm();
-
-  ngOnInit() {}
 
   initializeForm(): FormGroup {
     return this.formBuilder.group({
@@ -43,9 +42,13 @@ export class Login implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    this.loginUser(this.loginForm.value);
+  }
+
+  loginUser(formValue: LoginRequest): void {
     this.spinner.show();
     this.authService
-      .login(this.loginForm.value)
+      .login(formValue)
       .pipe(
         takeUntil(this.destroy$),
         catchError((err) => {
