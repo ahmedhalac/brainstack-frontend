@@ -1,12 +1,12 @@
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import { RouterLinkWithHref } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
-import { EMPTY, Subject, catchError, takeUntil } from 'rxjs';
+import { Router, RouterLinkWithHref } from '@angular/router';
+import { AuthService, AuthError } from '../../../core/services/auth.service';
+import { EMPTY, Subject, catchError, finalize, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { LoginRequest } from '../../../models/auth/login.model';
@@ -30,9 +30,12 @@ export class Login implements OnDestroy {
   private authService = inject(AuthService);
   private toastr = inject(ToastrService);
   private spinner = inject(NgxSpinnerService);
+  private router = inject(Router);
+
+  loginForm = this.initializeForm();
 
   private destroy$ = new Subject<void>();
-  loginForm = this.initializeForm();
+  isLoading = signal(false);
 
   initializeForm(): FormGroup {
     return this.formBuilder.group({
@@ -42,25 +45,31 @@ export class Login implements OnDestroy {
   }
 
   onSubmit(): void {
-    this.loginUser(this.loginForm.value);
+    if (this.loginForm.valid && !this.isLoading()) {
+      this.loginUser(this.loginForm.value);
+    }
   }
 
   loginUser(formValue: LoginRequest): void {
+    this.isLoading.set(true);
     this.spinner.show();
+
     this.authService
       .login(formValue)
       .pipe(
         takeUntil(this.destroy$),
-        catchError((err) => {
-          this.spinner.hide();
-          console.error(err);
-          this.toastr.error(err);
+        catchError((error: AuthError) => {
+          this.toastr.error(error.message);
           return EMPTY;
+        }),
+        finalize(() => {
+          this.isLoading.set(false);
+          this.spinner.hide();
         })
       )
-      .subscribe((res) => {
-        console.log(res);
-        this.spinner.hide();
+      .subscribe(() => {
+        this.toastr.success('Login successful!');
+        this.router.navigate(['/dashboard']);
       });
   }
 

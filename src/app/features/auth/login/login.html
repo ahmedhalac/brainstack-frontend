@@ -17,7 +17,13 @@
     <input matInput type="password" placeholder="Password" formControlName="password" />
   </mat-form-field>
   <div class="button-row">
-    <button type="submit" matButton="filled" [disabled]="!loginForm.valid">Submit</button>
+    <button type="submit" matButton="filled" [disabled]="!loginForm.valid || isLoading()">
+      @if (isLoading()) {
+      <span>Logging in...</span>
+      } @else {
+      <span>Submit</span>
+      }
+    </button>
     <h4>Don't have account? <a [routerLink]="['/register']">Register</a></h4>
   </div>
 </form>

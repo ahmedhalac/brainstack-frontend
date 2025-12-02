@@ -21,7 +21,7 @@
     <input matInput type="password" placeholder="Password" formControlName="password" />
     @if (registerForm.get('password')?.errors?.['required']) {
     <mat-error>Password is <strong>required</strong></mat-error>
-    } @if (registerForm.get('email')?.errors?.['minLength']) {
+    } @if (registerForm.get('password')?.errors?.['minlength']) {
     <mat-error>
       Your password must have at least
       {{ registerForm.get('password')?.errors?.['minlength'].requiredLength }} characters</mat-error
@@ -29,7 +29,13 @@
     }
   </mat-form-field>
   <div class="button-row">
-    <button type="submit" matButton="filled" [disabled]="!registerForm.valid">Register</button>
+    <button type="submit" matButton="filled" [disabled]="!registerForm.valid || isLoading()">
+      @if (isLoading()) {
+        <span>Registering...</span>
+      } @else {
+        <span>Register</span>
+      }
+    </button>
     <h4>Already have an account? <a [routerLink]="['/login']">Log in</a></h4>
   </div>
 </form>

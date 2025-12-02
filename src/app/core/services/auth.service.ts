@@ -5,6 +5,11 @@ import { Observable, catchError, tap, throwError } from 'rxjs';
 import { RegisterRequest, RegisterResponse } from '../../models/auth/register.model';
 import { environment } from '../../../environments/environment';
 
+export interface AuthError {
+  message: string;
+  status?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -19,8 +24,11 @@ export class AuthService {
         localStorage.setItem('token', response.accessToken);
       }),
       catchError((error) => {
-        const message = error.error.message || error.message || 'Something went wrong';
-        return throwError(() => message);
+        const authError: AuthError = {
+          message: error.error?.message || error.message || 'Login failed. Please try again.',
+          status: error.status,
+        };
+        return throwError(() => authError);
       })
     );
   }
@@ -29,8 +37,11 @@ export class AuthService {
     const url = `${this.baseUrl}/register`;
     return this.http.post<RegisterResponse>(url, payload).pipe(
       catchError((error) => {
-        const message = error.error.message || error.message || 'Something went wrong';
-        return throwError(() => message);
+        const authError: AuthError = {
+          message: error.error?.message || error.message || 'Registration failed. Please try again.',
+          status: error.status,
+        };
+        return throwError(() => authError);
       })
     );
   }
