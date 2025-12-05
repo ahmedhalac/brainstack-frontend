@@ -1,0 +1,49 @@
+<ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#fff" type="ball-scale-multiple">
+  <p style="font-size: 20px; color: white">Loading...</p>
+</ngx-spinner>
+<form class="verify-email-form" [formGroup]="verifyEmailForm" (ngSubmit)="onSubmit()">
+  <h1>Verify Email</h1>
+  <div class="info-message">
+    <p>We've sent you a verification code to <strong>{{ email }}</strong>. Please check your email and enter the code below.</p>
+  </div>
+  <mat-form-field class="example-full-width">
+    <mat-label>Verification Code</mat-label>
+    <input
+      matInput
+      type="text"
+      placeholder="Enter 6-digit code"
+      formControlName="verificationCode"
+      maxlength="6"
+    />
+    @if (verifyEmailForm.get('verificationCode')?.errors?.['required']) {
+    <mat-error>Verification code is <strong>required</strong></mat-error>
+    } @if (verifyEmailForm.get('verificationCode')?.errors?.['minlength'] ||
+    verifyEmailForm.get('verificationCode')?.errors?.['maxlength']) {
+    <mat-error>Verification code must be exactly 6 digits</mat-error>
+    } @if (verifyEmailForm.get('verificationCode')?.errors?.['pattern']) {
+    <mat-error>Verification code must be numeric</mat-error>
+    }
+  </mat-form-field>
+  <div class="button-row">
+    <button type="submit" matButton="filled" [disabled]="!verifyEmailForm.valid || isLoading()">
+      @if (isLoading()) {
+      <span>Verifying...</span>
+      } @else {
+      <span>Verify Email</span>
+      }
+    </button>
+    <button
+      type="button"
+      matButton="text"
+      (click)="resendCode()"
+      [disabled]="isResending() || isLoading()"
+    >
+      @if (isResending()) {
+      <span>Resending...</span>
+      } @else {
+      <span>Resend Code</span>
+      }
+    </button>
+  </div>
+  <h4>Already verified? <a [routerLink]="['/login']">Log in</a></h4>
+</form>

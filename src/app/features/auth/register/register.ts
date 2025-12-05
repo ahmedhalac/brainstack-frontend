@@ -69,7 +69,7 @@ export class Register implements OnDestroy {
       )
       .subscribe(() => {
         this.toastr.success('Registration successful! Please login.');
-        this.router.navigate(['/login']);
+        this.router.navigate(['/verify-email'], { queryParams: { email: formValue?.email } });
       });
   }
 

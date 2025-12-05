@@ -59,7 +59,14 @@ export class Login implements OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         catchError((error: AuthError) => {
-          this.toastr.error(error.message);
+          if (error.message === 'Please verify your email' && error.status === 403) {
+            this.router.navigate(['/verify-email'], {
+              queryParams: { email: this.loginForm.get('email')?.value },
+            });
+          } else {
+            this.toastr.error(error.message);
+          }
+
           return EMPTY;
         }),
         finalize(() => {
