@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatInputModule } from '@angular/material/input';
@@ -6,10 +6,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { Router, RouterLinkWithHref } from '@angular/router';
 import { AuthService, AuthError } from '../../../core/services/auth.service';
-import { EMPTY, Subject, catchError, finalize, takeUntil } from 'rxjs';
+import { EMPTY, catchError, finalize } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { LoginRequest } from '../../../models/auth/login.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-login',
@@ -25,16 +26,15 @@ import { LoginRequest } from '../../../models/auth/login.model';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login implements OnDestroy {
+export class Login {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private toastr = inject(ToastrService);
   private spinner = inject(NgxSpinnerService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   loginForm = this.initializeForm();
-
-  private destroy$ = new Subject<void>();
   isLoading = signal(false);
 
   initializeForm(): FormGroup {
@@ -57,7 +57,7 @@ export class Login implements OnDestroy {
     this.authService
       .login(formValue)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         catchError((error: AuthError) => {
           if (error.message === 'Please verify your email' && error.status === 403) {
             this.router.navigate(['/verify-email'], {
@@ -78,10 +78,5 @@ export class Login implements OnDestroy {
         this.toastr.success('Login successful!');
         this.router.navigate(['/dashboard']);
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

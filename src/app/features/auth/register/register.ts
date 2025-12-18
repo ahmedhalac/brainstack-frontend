@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatInputModule } from '@angular/material/input';
@@ -8,8 +8,9 @@ import { Router, RouterLinkWithHref } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { AuthService, AuthError } from '../../../core/services/auth.service';
-import { EMPTY, Subject, catchError, finalize, takeUntil } from 'rxjs';
+import { EMPTY, catchError, finalize } from 'rxjs';
 import { RegisterRequest } from '../../../models/auth/register.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-register',
@@ -24,16 +25,15 @@ import { RegisterRequest } from '../../../models/auth/register.model';
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
-export class Register implements OnDestroy {
+export class Register {
   private formBuilder = inject(FormBuilder);
   private authService = inject(AuthService);
   private toastr = inject(ToastrService);
   private spinner = inject(NgxSpinnerService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
-  private destroy$ = new Subject<void>();
   registerForm = this.initializeForm();
-
   isLoading = signal(false);
 
   initializeForm(): FormGroup {
@@ -57,7 +57,7 @@ export class Register implements OnDestroy {
     this.authService
       .register(formValue)
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         catchError((error: AuthError) => {
           this.toastr.error(error.message);
           return EMPTY;
@@ -68,13 +68,8 @@ export class Register implements OnDestroy {
         })
       )
       .subscribe(() => {
-        this.toastr.success('Registration successful! Please login.');
+        this.toastr.success('Registration successful! Please verify your email.');
         this.router.navigate(['/verify-email'], { queryParams: { email: formValue?.email } });
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }
