@@ -13,6 +13,7 @@ export class Dashboard implements OnInit {
   ngOnInit(): void {
     this.dashboardService.getUsers().subscribe(() => {
       console.log('get users work');
+      console.log("hello world")
     });
   }
 }
